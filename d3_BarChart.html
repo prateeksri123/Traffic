@@ -4,283 +4,383 @@ Copyright 2018 SAS Institute Inc.
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
-    https://www.apache.org/licenses/LICENSE-2.0
+https://www.apache.org/licenses/LICENSE-2.0
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 -->
-<!--
-	Bar Chart original code based on:
-	https://bost.ocks.org/mike/bar/3/
-	http://animateddata.co.uk/articles/d3/responsive/
-	
-	This example implements some basic chart functionality/characteristics, such as:
-	1. Default visualization (template/placeholder chart)
-	2. Roles validation
-	3. Formats
-	4. Selection (including multiple selections via crtl key)
-	5. Window resizing
--->
 <html>
 <head>
-	<meta charset="utf-8">
-	<script src="//d3js.org/d3.v3.min.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../util/messagingUtil.js"></script>
-    <script type="text/javascript" src="../util/contentUtil.js"></script>
-    <script type="text/javascript" src="../thirdPartyHelpers/d3.js"></script>
+  <!-- Import D3.js -->
+  <script type="text/javascript" src="https://d3js.org/d3.v5.min.js"></script>
+
+  <!-- Import utilities  -->
+  <script type="text/javascript" src="../../util/messagingUtil.js"></script>
+  <script type="text/javascript" src="../../util/contentUtil.js"></script>
 </head>
 <body>
-<style>
-	html {
-		overflow: hidden;
-	}
-	html, body, #chart {
-		margin: 0px;
-		padding: 0px;
-		height: 100%;
-		width: 100%;
-	}
-		
-	.bar {
-	  fill: steelblue;
-	}
-	.bar:hover {
-	  fill: #3d63a0; 
-	}
-	.bar-selected {
-	  stroke: #000;
-	  stroke-width: 3.0px;
-	}
-	
-	.axis-label {
-	  font: 15px sans-serif;
-	}
-	.axis text {
-	  font: 12px sans-serif;
-	}
-	.axis path,
-	.axis line {
-	  fill: none;
-	  stroke: #000;
-	  shape-rendering: crispEdges;
-	}
-	.x.axis path {
-	  display: none;
-	}
+  <style type="text/css">
+  html, body, svg {
+    overflow: hidden;
+    margin: 0px;
+    width: 100%;
+    height: 100%;
+  }
+  .data-bar {
+    fill: steelblue;
+  }
+  .data-bar:hover {
+    fill: lightsteelblue;
+  }
+  .selectable.selected {
+    stroke-width: 2px;
+    stroke: black;
+  }
 </style>
 
-<div id="chart"></div>
-
 <script>
-		var _resultData = null;
-		var _resultName = null;
-		var _selections = null;
-		var _axisFormatter = null;
-		var _data = null;
-		var _chart = null;
-		// This sample data is used to render the chart even if roles haven't been assigned to the Data-Driven Content object yet
-		var _sampleColLabels = ["Country", "GDP"];
-		var _sampleFormatter = {};
-		_sampleFormatter[_sampleColLabels[1]] = function(d) { return "$" + d3.format(",.")(d); };
-		var _sampleData = [
-				['China', 9181204],
-				['US', 16768100],
-				['Japan', 4898532],
-				['Germany', 3730261]
-			];
-			
-		var _margin = {top: 40, right: 20, bottom: 60, left: 80},
-			_width = window.innerWidth - _margin.left - _margin.right,
-			_height = window.innerHeight - _margin.top - _margin.bottom;
-	
-		var _xScale, _yScale, _xAxisComponent, _yAxisComponent;
-		var _svg = d3.select("#chart").append("svg")
-			.style("width", "100%")
-			.style("height", "100%")
-			.on("click", function(d,i){deselectAllBars(d, i);});
-			
-		var _chart = _svg.append("g")
-		    .attr("class", "chart")
-			.attr("transform", "translate(" + _margin.left + "," + _margin.top + ")");
-		var _barGroup = _chart.append("g")
-			  .attr("class", "bars");
-			  
-		var _xAxis = _chart.append("g")
-			  .attr("class", "x axis")
-			  .attr('transform', 'translate(0,' + _height + ')');
-			  
-		var _yAxis = _chart.append("g")
-			  .attr("class", "y axis");
-		// text label for the x axis
-		_chart.append("text")
-			.attr("class", "axis-label axis-label-x")
-			.style("text-anchor", "middle");
-		// text label for the y axis
-		_chart.append("text")
-			.attr("class", "axis-label axis-label-y")
-			.style("text-anchor", "begin");
-		function initChart() {			  
-			// Set up event listener for resizes
-			va.contentUtil.setupResizeListener(updateChart);
-			
-			// Initialize scales
-			_xScale = d3.scale.ordinal(); 
-			_yScale = d3.scale.linear(); 
-			// Build the x-axis
-			_xAxisComponent = d3.svg.axis() 
-				.scale(_xScale)
-				.orient("bottom");
-			// Build the y-axis
-			_yAxisComponent = d3.svg.axis()
-				.scale(_yScale)
-				.orient("left");
-		}
-		
-		function updateChart() {
-			updateScales();
-			updateAxes();
-			updateBars();
-			applySelections();
-		}
-		
-		
-		function updateScales() {
-			var data = (_data ? _data : _sampleData);
-			
-			_width = window.innerWidth - _margin.left - _margin.right;
-			_height = window.innerHeight - _margin.top - _margin.bottom;
-			_xScale
-				.domain(data.map(function(d) { return d[0]; }))
-				.rangeRoundBands([0, _width], .1);
-			_xAxis.attr('transform', 'translate(0,' + _height + ')');
-			_yScale
-				.domain([0, d3.max(data, function(d) { return d[1]; })])
-				.range([_height, 0]);
-		}
-		
-		function updateAxes() {
-			var formatter;
-			var xLabel, yLabel;
-			
-			if (_resultData) {
-				formatter = _axisFormatter;
-				xLabel = _resultData.columns[0].label;
-				yLabel = _resultData.columns[1].label;
-			}
-			else {
-				formatter = _sampleFormatter;
-				xLabel = _sampleColLabels[0];
-				yLabel = _sampleColLabels[1];
-			}
-			
-			_xAxis.call(_xAxisComponent);
-			_yAxis.call(_yAxisComponent.tickFormat(formatter[yLabel]));
-		  
-			// text label for the x axis
-			_chart.select("text.axis-label-x")
-				.attr("transform", "translate(" + (_width/2) + " ," + (_height + _margin.bottom * 0.7) + ")")
-				.text(xLabel);  
-			// text label for the y axis
-			_chart.select("text.axis-label-y")
-				.attr("transform", "translate(" + (-_margin.left/2) + " ," + (-_margin.top/2) + ")")
-				.text(yLabel);;
-		}
-		
-		function updateBars() {
-			var data = (_data ? _data : _sampleData);
-			
-			var bars = _barGroup
-				.selectAll('rect.bar')
-				.data(data);
-			bars.enter()
-				.append('rect')
-				.classed('bar', true);
-			bars.exit()
-				.remove();
-			bars
-				.attr('x', function(d) { return _xScale(d[0]); })
-				.attr('y', function(d) { return _yScale(d[1]); })
-				.attr('width', _xScale.rangeBand())
-				.attr('height', function(d) { return _height - _yScale(d[1]); });
-				
-			bars.on("click", function(d,i){selectBar(d, i, this);});
-		}
-		
-		function applySelections() {
-			// Deselect all bars
-			d3.selectAll("rect.bar-selected").classed("bar-selected", false);
-			// Select bars
-			if (_selections) {
-				_selections.forEach(function(selection) {
-					var i = selection.row + 1;
-					d3.select("rect.bar:nth-of-type(" + i + ")").classed("bar-selected", true);
-				});	
-			}
-		}
-		
-		
-        function onDataReceived(messageFromVA)
-        {
-			_resultData = messageFromVA;
-			_resultName = messageFromVA.resultName;
-			_selections = va.contentUtil.initializeSelections(messageFromVA);
-			if (!va.contentUtil.validateRoles(messageFromVA, ["string","number"], null)) {
-				va.messagingUtil.postInstructionalMessage(_resultName, 
-					"D3 Bar Chart expects columns to be assigned in this order:\n" +
-					" 1. X axis (string)\n" +
-					" 2. Y axis (number)");
-				return;
-			}
-			_data = messageFromVA.data;
-			// Numeric values can be assigned to the tooltip, so we should format the data
-			_axisFormatter = va.d3Helper.configureAxisFormatter(messageFromVA);
-			updateChart();
+"use strict";
+document.addEventListener("DOMContentLoaded", function() {
+  /******************************************************* Declare variables *******************************************************/
+  // Static data variables
+  const SVG_ID = "dynamic-bar"; // ID of SVG element
+  const SAMPLE_MESSAGE = {
+    version: "1",
+    resultName: "dd75",
+    rowCount: 6,
+    availableRowCount: 6,
+    data: [
+      ["Hybrid", 3],
+      ["Sedan", 262],
+      ["Sports", 49],
+      ["SUV", 60],
+      ["Truck", 24],
+      ["Wagon", 30]
+    ],
+    columns: [
+      {
+        name: "bi77",
+        label: "Type",
+        type: "string"
+      },
+      {
+        name: "bi78",
+        label: "Frequency",
+        type: "number",
+        usage: "quantitative",
+        aggregation: "totalCount",
+        format: {
+          name: "COMMA",
+          width: 12,
+          precision: 0,
+          formatString: "COMMA12."
         }
-		//
-		// Event handlers for interactions with the Bar Chart
-		//
-		
-		// Called when clicked on the chart background
-		//
-		function deselectAllBars(d, i) {
-			d3.selectAll("rect.bar-selected").classed("bar-selected", false);
-			va.messagingUtil.postSelectionMessage(_resultName, []);
-		}
-			
-			
-		// Called when clicked on a bar
-		//
-		function selectBar(d,i,clickedBar){
-			d3.event.stopPropagation();
-			
-			var bars = d3.selectAll("rect.bar");
-			var selectedFlag = d3.select(clickedBar).classed("bar-selected");
-			if (d3.event.ctrlKey) {
-				// Change selection status of selected bar and leave others unchanged
-				d3.select(clickedBar).classed("bar-selected", !selectedFlag);
-			}
-			else {
-				// Clear all selections
-				bars.classed("bar-selected", false);
-				d3.select(clickedBar).classed("bar-selected", !selectedFlag);
-			}
-			
-			// Send selections back to VA
-			var selections = [];
-			d3.selectAll("rect.bar").each(function(d,i){
-				if (d3.select(this).classed("bar-selected")) {
-					selections.push({row: i});
-				}
-			});
-			va.messagingUtil.postSelectionMessage(_resultName, selections);
-		}
-		
-		va.messagingUtil.setOnDataReceivedCallback(onDataReceived);
-		initChart();
-		updateChart();
-	
+      }
+    ]
+  }; // Sample data message to render graph outside of VA for debugging
+  // Dynamic data variables
+  let VA_MESSAGE; // Data message to be received from VA
+  let VA_RESULT_NAME; // Result name required to send messages back to VA
+  let DATA; // Data to be parsed from VA data message
+  // Static dimension variables
+  const TRANS_TIME = 500; // Duration of transitions
+  const EDGE_PADDING = 10; // Padding between end of axes and edge of SVG
+  const Y_AXIS_WIDTH = 30; // Width allocated for y-axis
+  const X_AXIS_HEIGHT = 30; // Height allocated for x-axis
+  // Dynamic dimension variables
+  let WIDTH; // Width of SVG element
+  let HEIGHT; // Height of SVG element
+  let CHART_WIDTH; // Width of chart area for bars
+  let CHART_HEIGHT; // Height of chart area for bars
+  // Selection and d3 variables
+  let SVG; // SVG selection
+  let G_CHART_AREA; // Chart area group selection
+  let X_SCALE; // Band scale for x categories
+  let Y_SCALE; // Linear scale for bar heights
+  let X_AXIS; // X axis group data-join
+  let Y_AXIS; // Y axis group data join
+  let DATA_BARS; // Data bars data-join
+  /*************************************************** Setup Callback Functions ***************************************************/
+  // Attach event for data message from VA
+  va.messagingUtil.setOnDataReceivedCallback(onDataReceived);
+  // If not being rendered in iFrame (outside VA), render with sample data
+  if (!inIframe()) {
+    onDataReceived(SAMPLE_MESSAGE);
+  }
+  // Listen for resize event
+  va.contentUtil.setupResizeListener(drawElements);
+  /****************************************************** Callback Functions ******************************************************/
+  // Take action on received data
+  function onDataReceived(messageFromVA) {
+    // Initialize data variables
+    VA_MESSAGE = messageFromVA;
+    VA_RESULT_NAME = messageFromVA.resultName;
+    // Validate data roles
+    if (
+      !va.contentUtil.validateRoles(
+        messageFromVA,
+        ["string", "number"],
+        ["number"]
+      )
+    ) {
+      va.messagingUtil.postInstructionalMessage(
+        VA_RESULT_NAME,
+        "D3 Bar Chart expects columns to be assigned in this order:\n" +
+          " 1. Category (string)\n" +
+          " 2. Measure (number)"
+      );
+      return;
+    }
+    // Restructure data from 2d array to array of objects
+    DATA = [];
+    for (let i = 0; i < VA_MESSAGE.data.length; i++) {
+      DATA.push({
+        x: VA_MESSAGE.data[i][0],
+        y: VA_MESSAGE.data[i][1],
+        selected: VA_MESSAGE.data[i][2],
+        index: i
+      });
+    }
+    // Initialize chart if first draw, otherwise process data and update elements accordingly
+    if (d3.select("#" + SVG_ID).empty()) {
+      drawElements();
+    } else {
+      updateElements();
+    }
+  }
+  // Draw elements for first time and on resize event
+  function drawElements() {
+    // Return if data is not yet initialized
+    if (!DATA) {
+      return;
+    }
+    // Calculate dimensions for graph based on container dimensions
+    WIDTH = window.innerWidth;
+    HEIGHT = window.innerHeight;
+    CHART_WIDTH = WIDTH - Y_AXIS_WIDTH - EDGE_PADDING;
+    CHART_HEIGHT = HEIGHT - X_AXIS_HEIGHT - EDGE_PADDING;
+    // Append svg and save reference
+    d3.select("body")
+      .selectAll("#" + SVG_ID)
+      .data([DATA])
+      .enter()
+      .append("svg")
+      .attr("id", SVG_ID)
+      .on("click", deselectAllElements);
+    SVG = d3
+      .select("#" + SVG_ID)
+      .attr("width", WIDTH)
+      .attr("height", HEIGHT);
+    // Append/update chart-area group and save reference
+    SVG.selectAll(".g-chart-area")
+      .data([DATA])
+      .enter()
+      .append("g")
+      .classed("g-chart-area", true)
+      .attr(
+        "transform",
+        "translate(" + Y_AXIS_WIDTH + ", " + EDGE_PADDING + ")"
+      );
+    G_CHART_AREA = SVG.select(".g-chart-area");
+    // Create x scale
+    X_SCALE = d3
+      .scaleBand()
+      .rangeRound([0, CHART_WIDTH])
+      .padding(0.1)
+      .domain(
+        DATA.map(function(d) {
+          return d.x;
+        })
+      );
+    // Create y scale
+    Y_SCALE = d3
+      .scaleLinear()
+      .rangeRound([CHART_HEIGHT, 0])
+      .domain([
+        0,
+        d3.max(DATA, function(d) {
+          return d.y;
+        })
+      ]);
+    // Create x axis
+    X_AXIS = SVG.selectAll(".x-axis").data([DATA]);
+    X_AXIS.enter()
+      .append("g")
+      .classed("x-axis", true)
+      .merge(X_AXIS)
+      .attr(
+        "transform",
+        "translate(" + Y_AXIS_WIDTH + ", " + (HEIGHT - X_AXIS_HEIGHT) + ")"
+      )
+      .call(d3.axisBottom(X_SCALE));
+    // Create y axis
+    Y_AXIS = SVG.selectAll(".y-axis").data([DATA]);
+    Y_AXIS.enter()
+      .append("g")
+      .classed("y-axis", true)
+      .merge(Y_AXIS)
+      .attr(
+        "transform",
+        "translate(" + Y_AXIS_WIDTH + ", " + EDGE_PADDING + ")"
+      )
+      .call(d3.axisLeft(Y_SCALE));
+    // Create bars for each
+    DATA_BARS = G_CHART_AREA.selectAll(".data-bar").data(DATA, function(d) {
+      return d.x;
+    });
+    DATA_BARS.enter()
+      .append("rect")
+      .classed("data-bar", true)
+      .classed("selectable", true)
+      .classed("selected", function(d) {
+        return d.selected;
+      })
+      .on("click", selectElement)
+      .merge(DATA_BARS)
+      .attr("x", function(d) {
+        return X_SCALE(d.x);
+      })
+      .attr("y", function(d) {
+        return Y_SCALE(d.y);
+      })
+      .attr("width", function() {
+        return X_SCALE.bandwidth();
+      })
+      .attr("height", function(d) {
+        return CHART_HEIGHT - Y_SCALE(d.y);
+      });
+  }
+  // Redraw data dependent elements on data change
+  function updateElements() {
+    // Update x scale
+    X_SCALE = d3
+      .scaleBand()
+      .rangeRound([0, CHART_WIDTH])
+      .padding(0.1)
+      .domain(
+        DATA.map(function(d) {
+          return d.x;
+        })
+      );
+    // Update y scale
+    Y_SCALE = d3
+      .scaleLinear()
+      .rangeRound([CHART_HEIGHT, 0])
+      .domain([
+        0,
+        d3.max(DATA, function(d) {
+          return d.y;
+        })
+      ]);
+    // Update x axis
+    X_AXIS = SVG.selectAll(".x-axis").data([DATA]);
+    X_AXIS.transition()
+      .duration(TRANS_TIME)
+      .call(d3.axisBottom(X_SCALE));
+    // Update x axis
+    Y_AXIS = SVG.selectAll(".y-axis").data([DATA]);
+    Y_AXIS.transition()
+      .duration(TRANS_TIME)
+      .call(d3.axisLeft(Y_SCALE));
+    // Enter/Update/Exit data bars
+    DATA_BARS = G_CHART_AREA.selectAll(".data-bar").data(DATA, function(d) {
+      return d.x;
+    });
+    DATA_BARS.classed("selected", function(d) {
+      return d.selected;
+    })
+      .transition()
+      .duration(TRANS_TIME)
+      .attr("x", function(d) {
+        return X_SCALE(d.x);
+      })
+      .attr("y", function(d) {
+        return Y_SCALE(d.y);
+      })
+      .attr("width", function() {
+        return X_SCALE.bandwidth();
+      })
+      .attr("height", function(d) {
+        return CHART_HEIGHT - Y_SCALE(d.y);
+      })
+      .style("opacity", 1);
+    DATA_BARS.enter()
+      .append("rect")
+      .classed("data-bar", true)
+      .classed("selectable", true)
+      .classed("selected", function(d) {
+        return d.selected;
+      })
+      .attr("x", function(d) {
+        return X_SCALE(d.x);
+      })
+      .attr("y", function(d) {
+        return Y_SCALE(d.y);
+      })
+      .attr("width", function() {
+        return X_SCALE.bandwidth();
+      })
+      .attr("height", function(d) {
+        return CHART_HEIGHT - Y_SCALE(d.y);
+      })
+      .style("opacity", 0)
+      .on("click", selectElement)
+      .transition()
+      .duration(TRANS_TIME)
+      .style("opacity", 1);
+    DATA_BARS.exit()
+      .classed("selected", false)
+      .transition()
+      .duration(TRANS_TIME)
+      .attr("data-test", function() {
+        return 0;
+      })
+      .style("opacity", 0)
+      .remove();
+  }
+  /******************************************************* Helper Functions *******************************************************/
+  // Determine whether or not page is being rendered in iFrame
+  function inIframe() {
+    try {
+      return window.self !== window.top;
+    } catch (e) {
+      return true;
+    }
+  }
+  // Deselect all on svg click
+  function deselectAllElements() {
+    // Deselect all elements
+    d3.selectAll(".selectable").classed("selected", false);
+    // Post message to VA
+    va.messagingUtil.postSelectionMessage(VA_RESULT_NAME, []);
+  }
+  // Handle selection on element
+  function selectElement() {
+    // Prevent event from falling through to underlying elements
+    d3.event.stopPropagation();
+    // If control is held toggle selected on click preserving array, otherwise select only clicked element
+    if (d3.event.ctrlKey) {
+      // Toggle selection on clicked element
+      d3.select(this).classed("selected", !d3.select(this).classed("selected"));
+    } else {
+      // Deselect all elements
+      d3.selectAll(".selectable").classed("selected", false);
+      // Select clicked element
+      d3.select(this).classed("selected", true);
+    }
+    // Build array of selected elements
+    const selections = [];
+    d3.selectAll(".selectable").each(function(d) {
+      if (d3.select(this).classed("selected")) {
+        selections.push({ row: d.index });
+      }
+    });
+    // Post message to VA
+    va.messagingUtil.postSelectionMessage(VA_RESULT_NAME, selections);
+  }
+});
 </script>
 </body>
 </html>
