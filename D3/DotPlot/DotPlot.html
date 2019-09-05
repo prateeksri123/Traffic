@@ -35,6 +35,10 @@ limitations under the License.
     width: 100%;
     height: 100%;
   }
+
+text {
+	font-family:Verdana, sans-serif;
+	  }
 	  
 .circle {
 	fill: orange;
@@ -67,10 +71,6 @@ document.addEventListener("DOMContentLoaded", function() {
   let measurements;
   let safety_metrics;
 
-  /*selectedMajor = "SR 1314";
-	  
-  selectedMinor = "SR 1311";*/
-	
   // Static dimension variables
   const TRANS_TIME = 500; // Duration of transitions
   const EDGE_PADDING = 10; // Padding between end of axes and edge of SVG
@@ -97,10 +97,6 @@ document.addEventListener("DOMContentLoaded", function() {
   // Attach event for data message from VA
   va.messagingUtil.setOnDataReceivedCallback(onDataReceived);
 
-  /* If not being rendered in iFrame (outside VA), render with sample data
-  if (!inIframe()) {
-    onDataReceived(SAMPLE_MESSAGE);
-  }*/
 
   // Listen for resize event
   va.contentUtil.setupResizeListener(drawElements);
@@ -148,16 +144,8 @@ document.addEventListener("DOMContentLoaded", function() {
         minor_name: VA_MESSAGE.data[i][10]
       });
     }
-	  
-
-    	
+	  	
       drawElements();
-
-	  
-     /*// Initialize chart if first draw, otherwise process data and update elements accordingly
-    if (d3.select("#" + SVG_ID).empty()) {
-      drawElements();
-    } */
       
   }
 
@@ -176,28 +164,27 @@ document.addEventListener("DOMContentLoaded", function() {
    	CHART_HEIGHT = HEIGHT - X_AXIS_HEIGHT - EDGE_PADDING;  
 
 	
-	var SVG = d3.select("#my_dataviz")
+	var SVG = d3.select("body")
 	  .data([DATA])
 	  .append("svg")
 	  .attr("width", WIDTH)
 	  .attr("height", HEIGHT);
+	
+	var x = d3.scaleLinear()
+    		.domain([0, d3.max(DATA, d => d3.max(measurements, k => d[k]))])
+    		.range([0,10])
+    		.rangeRound([margin.left, width - margin.right])	
+	
+	var y = d3.scalePoint()
+   		 .domain(safety_metrics)
+   		 .rangeRound([margin.top, height - margin.bottom])
+   		 .padding(5)
 
-	 /* .selectAll("#" + SVG_ID)
-	  .data)[DATA])
-	  .enter()
-	  .append("svg")
-	  .attr("id", SVG_ID);
-
-	SVG.append("g").call(xAxis);*/
-	  
-	/*SVG.append("g")
-		.attr("text-anchor", "end")
-		.style("font", "10px sans-serif")
-		.selectAll("g")
-		.data([DATA])
-		.join("g")
-		.attr("transform", (d,i) => `translate(0,${y(d.safety_metric)})`);*/
-	  
+	var color = d3.scaleOrdinal()
+   		 .unknown("#ccc")
+    		.domain(measurements)
+    		.range(d3.quantize(t => d3.interpolateSpectral(t * 0.8 + 0.1), measurements.length).reverse())  
+	
 	SVG.append("circle")
     	  .data(d => d3.cross(measurements, [d]))
     	  .join("circle")
@@ -210,44 +197,7 @@ document.addEventListener("DOMContentLoaded", function() {
 		.attr("stroke", "#aaa")
 		.attr("x1", d => x(d3.min(measurements, k => d[k])))
         	.attr("x2", d => x(d3.max(measurements, k => d[k])));	  
-
-	/*SVG.append("text")
-	  	.data([DATA])
-      		.attr("dy", "0.35em")
-      		.attr("x", d => x(d3.min(measurements, k => d[k])) - 30)
-      		.text((d, i) => d.safety_metric);*/
 	  
-	var x = d3.scaleLinear()
-    		.domain([0, d3.max(DATA, d => d3.max(measurements, k => d[k]))])
-    		.range([0,10])
-    		.rangeRound([margin.left, width - margin.right])	
-	
-	var y = d3.scalePoint()
-   		 .domain(safety_metrics)
-   		 .rangeRound([margin.top, height - margin.bottom])
-   		 .padding(5)
-
-	color = d3.scaleOrdinal()
-   		 .unknown("#ccc")
-    		.domain(measurements)
-    		.range(d3.quantize(t => d3.interpolateSpectral(t * 0.8 + 0.1), measurements.length).reverse())
-
-	/*xAxis = g => g
-    		.attr("transform", `translate(0,${margin.top})`)
-   		 .call(d3.axisTop(x).ticks(null, "%"))
-    		.call(g => g.selectAll(".tick line").clone().attr("stroke-opacity", 0.1).attr("y2", height - margin.bottom))
-   		 .call(g => g.selectAll(".domain").remove())*/
-
-	/*legend = SVG => {
-  		const g = SVG
-      			.attr("font-family", "sans-serif")
-      			.attr("font-size", 10)
-     			.attr("text-anchor", "end")
-     			.attr("transform", `translate(${width},${margin.top})`)
-   			.selectAll("g")
-    			.data(measurements.slice().reverse())
-    			.join("g")
-      			.attr("transform", (d, i) => `translate(0,${i * 20})`);*/
 
   	SVG.append("rect")
       		.attr("x", -19)
@@ -272,112 +222,7 @@ document.addEventListener("DOMContentLoaded", function() {
 	margin = ({top: 20, right: 5, bottom: 150, left: 5})
 	  
   }	  
-	  
-/*	chart = {
-	
-  	const svg = d3.select(DOM.svg(width, height));
-	
-	svg.append("g").call(xAxis);
-	
-	const g = svg.append("g")
-		.attr("text-anchor", "end")
-		.style("font", "10px sans-serif")
-		.selectAll("g")
-		.data(data)
-		.join("g")
-		.attr("transform", (d,i) => `translate(0,${y(d.safety_metric)})`);
-
-	g.append("line")
-		.attr("stroke", "#aaa")
-		.attr("x1", d => x(d3.min(measurements, k => d[k])))
-        .attr("x2", d => x(d3.max(measurements, k => d[k])));
-	
-	g.append("g")
-    		.selectAll("circle")
-    		.data(d => d3.cross(measurements, [d]))
-    		.join("circle")
-           	.attr("cx", ([k, d]) => x(d[k]))
-      		.attr("fill", ([k]) => color(k))
-      		.attr("r", 3.5);
-  
-
-	g.append("text")
-      		.attr("dy", "0.35em")
-      		.attr("x", d => x(d3.min(measurements, k => d[k])) - 30)
-      		.text((d, i) => d.safety_metric);
-  
-
-
-
-  	svg.append("g")
-      		.call(legend);
-
-
-	return Object.assign(svg.node());
-	}	  
-
-	d3.min(measurements, k => data[k])
-
-	measurements = ['min', 'lcl', 'median', 'mean', 'hlc', 'max']
-
-	safety_metrics = data.map(d => d.safety_metric)
-
-	x = d3.scaleLinear()
-    		.domain([0, d3.max(data, d => d3.max(measurements, k => d[k]))])
-    		.range([0,10])
-    		.rangeRound([margin.left, width - margin.right])	
-	
-	y = d3.scalePoint()
-   		 .domain(safety_metrics)
-   		 .rangeRound([margin.top, height - margin.bottom])
-   		 .padding(5)
-
-	color = d3.scaleOrdinal()
-   		 .unknown("#ccc")
-    		.domain(measurements)
-    		.range(d3.quantize(t => d3.interpolateSpectral(t * 0.8 + 0.1), measurements.length).reverse())
-
-	xAxis = g => g
-    		.attr("transform", `translate(0,${margin.top})`)
-   		 .call(d3.axisTop(x).ticks(null, "%"))
-    		.call(g => g.selectAll(".tick line").clone().attr("stroke-opacity", 0.1).attr("y2", height - margin.bottom))
-   		 .call(g => g.selectAll(".domain").remove())
-
-	legend = svg => {
-  		const g = svg
-      			.attr("font-family", "sans-serif")
-      			.attr("font-size", 10)
-     			.attr("text-anchor", "end")
-     			.attr("transform", `translate(${width},${margin.top})`)
-   			.selectAll("g")
-    			.data(measurements.slice().reverse())
-    			.join("g")
-      			.attr("transform", (d, i) => `translate(0,${i * 20})`);
-
-  	g.append("rect")
-      		.attr("x", -19)
-      		.attr("width", 19)
-      		.attr("height", 19)
-      		.attr("fill", color);
-
-	g.append("text")
-	        .attr("x", -24)
-      		.attr("y", 9.5)
-      		.attr("dy", "0.35em")
-      		.text(d => d);
-  
-	g.append("text")
-    		.attr("y", d => x(d3.min(measurements, k => d[k])) - 10)
-    		.attr("x", d => x(d3.min(measurements, k => d[k])))
-    		.text((d,i) => d.value);
-	}*/
-
-	height = data.length * 70
-
-	margin = ({top: 20, right: 5, bottom: 150, left: 5})
-
-
-	  
+	  	  
     
   
 
