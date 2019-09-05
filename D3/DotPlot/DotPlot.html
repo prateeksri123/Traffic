@@ -179,7 +179,6 @@ document.addEventListener("DOMContentLoaded", function() {
 	var SVG = d3.select("#my_dataviz")
 	  .data([DATA])
 	  .append("svg")
-	  .attr('id', 'graph')
 	  .attr("width", WIDTH)
 	  .attr("height", HEIGHT);
 
@@ -199,15 +198,15 @@ document.addEventListener("DOMContentLoaded", function() {
 		.join("g")
 		.attr("transform", (d,i) => `translate(0,${y(d.safety_metric)})`);*/
 	  
-	SVG.selectAll("circle")
+	SVG.append("circle")
     	  .data(d => d3.cross(measurements, [d]))
     	  .join("circle")
           .attr("cx", ([k, d]) => x(d[k]))
       	  .attr("fill", ([k]) => color(k))
       	  .attr("r", 3.5);
 	  
-	  
-	SVG.selectAll("hr.style1")
+/*	  
+	SVG.append("#hr.style1")
 		.attr("stroke", "#aaa")
 		.attr("x1", d => x(d3.min(measurements, k => d[k])))
         	.attr("x2", d => x(d3.max(measurements, k => d[k])));	  
@@ -238,7 +237,7 @@ document.addEventListener("DOMContentLoaded", function() {
    		 .call(d3.axisTop(x).ticks(null, "%"))
     		.call(g => g.selectAll(".tick line").clone().attr("stroke-opacity", 0.1).attr("y2", height - margin.bottom))
    		 .call(g => g.selectAll(".domain").remove())*/
-
+/*
 	legend = SVG => {
   		const g = SVG
       			.attr("font-family", "sans-serif")
@@ -265,7 +264,7 @@ document.addEventListener("DOMContentLoaded", function() {
 	SVG.append("text")
     		.attr("y", d => x(d3.min(measurements, k => d[k])) - 10)
     		.attr("x", d => x(d3.min(measurements, k => d[k])))
-    		.text((d,i) => d.value);
+    		.text((d,i) => d.value); */
 	}
 
 	height = data.length * 70
