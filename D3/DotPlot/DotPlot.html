@@ -24,6 +24,10 @@ limitations under the License.
   <script type="text/javascript" src="../util/contentUtil.js"></script>
 </head>
 <body>
+
+<!-- Create a div where the graph will take place -->
+<div id="my_dataviz"></div>	
+	
   <style type="text/css">
   html, body, svg {
     overflow: hidden;
@@ -37,7 +41,12 @@ limitations under the License.
 }
 	  
 .dot {
-  stroke: #000;
+	stroke: #000;
+}
+
+hr.style1 {
+	border-top:1px solid
+	#8c8b8b;
 }
 
 </style>
@@ -167,7 +176,7 @@ document.addEventListener("DOMContentLoaded", function() {
    	CHART_HEIGHT = HEIGHT - X_AXIS_HEIGHT - EDGE_PADDING;  
 
 	
-	var SVG = d3.select("body")
+	var SVG = d3.select("#my_dataviz")
 	  .data([DATA])
 	  .append("svg")
 	  .attr('id', 'graph')
@@ -182,15 +191,15 @@ document.addEventListener("DOMContentLoaded", function() {
 
 	SVG.append("g").call(xAxis);*/
 	  
-	var textLables = SVG.append("g")
+	/*SVG.append("g")
 		.attr("text-anchor", "end")
 		.style("font", "10px sans-serif")
 		.selectAll("g")
 		.data([DATA])
 		.join("g")
-		.attr("transform", (d,i) => `translate(0,${y(d.safety_metric)})`);
+		.attr("transform", (d,i) => `translate(0,${y(d.safety_metric)})`);*/
 	  
-	var circles = SVG.selectAll("circle")
+	SVG.selectAll("circle")
     	  .data(d => d3.cross(measurements, [d]))
     	  .join("circle")
           .attr("cx", ([k, d]) => x(d[k]))
@@ -198,7 +207,7 @@ document.addEventListener("DOMContentLoaded", function() {
       	  .attr("r", 3.5);
 	  
 	  
-	var lines = SVG.selectAll("line")
+	SVG.selectAll("hr.style1")
 		.attr("stroke", "#aaa")
 		.attr("x1", d => x(d3.min(measurements, k => d[k])))
         	.attr("x2", d => x(d3.max(measurements, k => d[k])));	  
@@ -241,19 +250,19 @@ document.addEventListener("DOMContentLoaded", function() {
     			.join("g")
       			.attr("transform", (d, i) => `translate(0,${i * 20})`);
 
-  	g.append("rect")
+  	SVG.append("rect")
       		.attr("x", -19)
       		.attr("width", 19)
       		.attr("height", 19)
       		.attr("fill", color);
 
-	g.append("text")
+	SVG.append("text")
 	        .attr("x", -24)
       		.attr("y", 9.5)
       		.attr("dy", "0.35em")
       		.text(d => d);
   
-	g.append("text")
+	SVG.append("text")
     		.attr("y", d => x(d3.min(measurements, k => d[k])) - 10)
     		.attr("x", d => x(d3.min(measurements, k => d[k])))
     		.text((d,i) => d.value);
