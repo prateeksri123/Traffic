@@ -58,6 +58,7 @@ hr.style1 {
 <script>
 "use strict";
 
+
 document.addEventListener("DOMContentLoaded", function() {
   /******************************************************* Declare variables *******************************************************/
 
@@ -91,7 +92,136 @@ document.addEventListener("DOMContentLoaded", function() {
   let X_AXIS; // X axis group data-join
   let Y_AXIS; // Y axis group data join
   let DATA_BARS; // Data bars data-join
-*/
+  data = [
+	{
+		safety_metric: "total crash rate",
+		min: 2,
+		lcl: 10,
+		median: 14,
+		mean: 15,
+		hcl: 20,
+		max: 30,
+		value: 13,
+		combo: 100000,
+		major_road: '1st St',
+		minor_road: 'Bridge St'
+		
+	},
+	{
+		safety_metric: "crash severity index",
+		min: 7,
+		lcl: 12,
+		median: 17,
+		mean: 17,
+		hcl: 39,
+		max: 50,
+		value: 23,
+		combo: 100000,
+		major_road: '1st St',
+		minor_road: 'Bridge St',
+		
+	},
+	{
+		safety_metric: "total fatalities",
+		min: 8,
+		lcl: 10,
+		median: 20,
+		mean: 25,
+		hcl: 29,
+		max: 40,
+		value: 22,
+		combo: 100000,
+		major_road: '1st St',
+		minor_road: 'Bridge St'
+		
+	},
+	{
+		safety_metric: "total crash rate",
+		min: 5,
+		lcl: 13,
+		median: 17,
+		mean: 18,
+		hcl: 23,
+		max: 33,
+		value: 13,
+		combo: 110000,
+		major_road: '1st St',
+		minor_road: 'Bridge St'
+		
+	},
+	{
+		safety_metric: "crash severity index",
+		min: 10,
+		lcl: 15,
+		median: 20,
+		mean: 20,
+		hcl: 42,
+		max: 53,
+		value: 23,
+		combo: 110000,
+		major_road: '1st St',
+		minor_road: 'Bridge St'
+		
+	},
+	{
+		safety_metric: "total fatalities",
+		min: 11,
+		lcl: 13,
+		median: 23,
+		mean: 28,
+		hcl: 32,
+		max: 43,
+		value: 22,
+		combo: 110000,
+		major_road: '1st St',
+		minor_road: 'Bridge St'
+		
+	},
+	{
+		safety_metric: "total crash rate",
+		min: 2,
+		lcl: 10,
+		median: 14,
+		mean: 15,
+		hcl: 20,
+		max: 30,
+		value: 18,
+		combo: 110000,
+		major_road: '1st St',
+		minor_road: 'Church St'
+		
+	},
+	{
+		safety_metric: "crash severity index",
+		min: 7,
+		lcl: 12,
+		median: 17,
+		mean: 17,
+		hcl: 39,
+		max: 50,
+		value: 12,
+		combo: 110000,
+		major_road: '1st St',
+		minor_road: 'Church St'
+		
+	},
+	{
+		safety_metric: "total fatalities",
+		min: 8,
+		lcl: 10,
+		median: 20,
+		mean: 25,
+		hcl: 29,
+		max: 40,
+		value: 16,
+		combo: 110000,
+		major_road: '1st St',
+		minor_road: 'Church St'
+		
+	}
+	
+];
+
   /*************************************************** Setup Callback Functions ***************************************************/
 
   // Attach event for data message from VA
@@ -126,7 +256,7 @@ document.addEventListener("DOMContentLoaded", function() {
       );
       return;
     }
-
+/*
     // Restructure data from 2d array to array of objects
     DATA = [];
     for (let i = 0; i < VA_MESSAGE.data.length; i++) {
@@ -143,7 +273,9 @@ document.addEventListener("DOMContentLoaded", function() {
 	major_name: VA_MESSAGE.data[i][9],
         minor_name: VA_MESSAGE.data[i][10]
       });
-    }
+	    
+     
+    */
 	  	
       drawElements();
       
