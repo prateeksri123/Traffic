@@ -108,8 +108,8 @@ document.addEventListener("DOMContentLoaded", function() {
     if (
       !va.contentUtil.validateRoles(
         messageFromVA,
-        ["string"],
-        ["number"]
+        ["string", "number", "number", "number", "number", "number", "number", "number", "string", "string", "string" ],
+        []
       )
     ) {
       va.messagingUtil.postInstructionalMessage(
