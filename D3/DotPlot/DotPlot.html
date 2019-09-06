@@ -66,7 +66,7 @@ document.addEventListener("DOMContentLoaded", function() {
   let X_AXIS; // X axis group data-join
   let Y_AXIS; // Y axis group data join
   let DATA_BARS; // Data bars data-join
-  
+  /*
   DATA = [
 	{
 		safety_metric: "total crash rate",
@@ -195,7 +195,7 @@ document.addEventListener("DOMContentLoaded", function() {
 		
 	}
 	
-];
+]; */
  
   /*************************************************** Setup Callback Functions ***************************************************/
   // Attach event for data message from VA
@@ -227,7 +227,7 @@ document.addEventListener("DOMContentLoaded", function() {
     }
 
     // Restructure data from 2d array to array of objects
-    /*DATA = [];
+    DATA = [];
     for (let i = 0; i < VA_MESSAGE.data.length; i++) {
       DATA.push({
         safety_metric: VA_MESSAGE.data[i][0],
@@ -242,7 +242,7 @@ document.addEventListener("DOMContentLoaded", function() {
 	major_name: VA_MESSAGE.data[i][9],
         minor_name: VA_MESSAGE.data[i][10]
       });
-	}    */
+	}    
 	  	
       drawElements();
       
