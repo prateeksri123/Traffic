@@ -210,13 +210,12 @@ document.addEventListener("DOMContentLoaded", function() {
     VA_RESULT_NAME = messageFromVA.resultName;
     MEASUREMENTS = ['min', 'lcl', 'median', 'mean', 'hlc', 'max'];
     SAFETY_METRICS = DATA.map(d => d.safety_metric);
-/*	  
+	  
     // Validate data roles
     if (
       !va.contentUtil.validateRoles(
         messageFromVA,
-        ["string", "number", "number", "number", "number", "number", "number", "number", "string", "string", "string" ],
-        []
+        ["string", "number", "number", "number", "number", "number", "number", "number", "string", "string", "string" ]
       )
     ) {
       va.messagingUtil.postInstructionalMessage(
@@ -226,7 +225,7 @@ document.addEventListener("DOMContentLoaded", function() {
       );
       return;
     }
-*/
+
     // Restructure data from 2d array to array of objects
     /*DATA = [];
     for (let i = 0; i < VA_MESSAGE.data.length; i++) {
