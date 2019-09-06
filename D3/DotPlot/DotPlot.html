@@ -67,7 +67,7 @@ document.addEventListener("DOMContentLoaded", function() {
   let Y_AXIS; // Y axis group data join
   let DATA_BARS; // Data bars data-join
   
- /* DATA = [
+  DATA = [
 	{
 		safety_metric: "total crash rate",
 		min: 2,
@@ -195,7 +195,7 @@ document.addEventListener("DOMContentLoaded", function() {
 		
 	}
 	
-];*/
+];
  
   /*************************************************** Setup Callback Functions ***************************************************/
   // Attach event for data message from VA
@@ -227,22 +227,22 @@ document.addEventListener("DOMContentLoaded", function() {
       return;
     }
     // Restructure data from 2d array to array of objects
-    DATA = [];
+    /*DATA = [];
     for (let i = 0; i < VA_MESSAGE.data.length; i++) {
       DATA.push({
         safety_metric: VA_MESSAGE.data[i][0],
-		min: VA_MESSAGE.data[i][1],
-		lcl: VA_MESSAGE.data[i][2],
-		median: VA_MESSAGE.data[i][3],      
-		mean: VA_MESSAGE.data[i][4],      
-		hcl: VA_MESSAGE.data[i][5],
-		max: VA_MESSAGE.data[i][6],
-		value: VA_MESSAGE.data[i][7],
-		combo: VA_MESSAGE.data[i][8],
-		major_name: VA_MESSAGE.data[i][9],
+	min: VA_MESSAGE.data[i][1],
+	lcl: VA_MESSAGE.data[i][2],
+	median: VA_MESSAGE.data[i][3],      
+	mean: VA_MESSAGE.data[i][4],      
+	hcl: VA_MESSAGE.data[i][5],
+	max: VA_MESSAGE.data[i][6],
+	value: VA_MESSAGE.data[i][7],
+	combo: VA_MESSAGE.data[i][8],
+	major_name: VA_MESSAGE.data[i][9],
         minor_name: VA_MESSAGE.data[i][10]
       });
-	}    
+	}    */
 	  	
       drawElements();
       
@@ -299,7 +299,8 @@ document.addEventListener("DOMContentLoaded", function() {
 		.style("font", "10px sans-serif")
 		.selectAll("g")
 		.data(DATA)
-		.join("g");
+		.join("g")
+		.attr("transform", (d,i) => `translate(0,${y(d.safety_metric)})`);
 	
 	g.append("line")
 		.attr("stroke", "#aaa")
