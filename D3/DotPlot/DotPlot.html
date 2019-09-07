@@ -200,8 +200,8 @@ document.addEventListener("DOMContentLoaded", function() {
   /*************************************************** Setup Callback Functions ***************************************************/
   // Attach event for data message from VA
   va.messagingUtil.setOnDataReceivedCallback(onDataReceived);
-  // Listen for resize event
-  va.contentUtil.setupResizeListener(drawElements);
+  /* Listen for resize event
+  va.contentUtil.setupResizeListener(drawElements);*/
   /****************************************************** Callback Functions ******************************************************/
   // Take action on received data
   function onDataReceived(messageFromVA) {
