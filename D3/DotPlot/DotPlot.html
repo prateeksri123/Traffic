@@ -38,7 +38,7 @@ limitations under the License.
 "use strict";
 document.addEventListener("DOMContentLoaded", function() {
   /******************************************************* Declare variables *******************************************************/
-  
+  debugger;
   // Static data variables
   const SVG_ID = "circle";
   // Dynamic data variables
@@ -66,7 +66,7 @@ document.addEventListener("DOMContentLoaded", function() {
   let X_AXIS; // X axis group data-join
   let Y_AXIS; // Y axis group data join
   let DATA_BARS; // Data bars data-join
-  /*
+  
   DATA = [
 	{
 		safety_metric: "total crash rate",
@@ -195,13 +195,15 @@ document.addEventListener("DOMContentLoaded", function() {
 		
 	}
 	
-]; */
+];
+
+	console.log({DATA});
  
   /*************************************************** Setup Callback Functions ***************************************************/
   // Attach event for data message from VA
   va.messagingUtil.setOnDataReceivedCallback(onDataReceived);
-  /* Listen for resize event
-  va.contentUtil.setupResizeListener(drawElements);*/
+  // Listen for resize event
+  va.contentUtil.setupResizeListener(drawElements);
   /****************************************************** Callback Functions ******************************************************/
   // Take action on received data
   function onDataReceived(messageFromVA) {
@@ -216,6 +218,7 @@ document.addEventListener("DOMContentLoaded", function() {
       !va.contentUtil.validateRoles(
         messageFromVA,
         ["string", "number", "number", "number", "number", "number", "number", "number", "string", "string", "string" ]
+        
       )
     ) {
       va.messagingUtil.postInstructionalMessage(
@@ -225,9 +228,9 @@ document.addEventListener("DOMContentLoaded", function() {
       );
       return;
     }
-
+  
     // Restructure data from 2d array to array of objects
-    DATA = [];
+    /*DATA = [];
     for (let i = 0; i < VA_MESSAGE.data.length; i++) {
       DATA.push({
         safety_metric: VA_MESSAGE.data[i][0],
@@ -242,7 +245,7 @@ document.addEventListener("DOMContentLoaded", function() {
 	major_name: VA_MESSAGE.data[i][9],
         minor_name: VA_MESSAGE.data[i][10]
       });
-	}    
+	}    */
 	  	
       drawElements();
       
@@ -268,9 +271,9 @@ document.addEventListener("DOMContentLoaded", function() {
 
 					
 	var y = d3.scalePoint()
-   		 .domain([SAFETY_METRICS])
+   		 .domain(DATA.map(function(d){return d.safety_metric}))
    		 .rangeRound([margin.top, HEIGHT - margin.bottom])
-   		 .padding(5);
+   		 .padding(2);
 		
 	var color = d3.scaleOrdinal()
    		 .unknown("#ccc")
@@ -296,14 +299,14 @@ document.addEventListener("DOMContentLoaded", function() {
 	
 	
 
-	/*g.append("g")
+	var labels = g.append("g")
 		.attr("text-anchor", "end")
 		.style("font", "10px sans-serif")
 		.selectAll("g")
 		.data(DATA)
 		.join("g")
-		.attr("transform", (d,i) => `translate(0,${y(d.safety_metric)})`); 
-	*/
+		.attr("transform", (d,i) => `translate(0,${y(d.safety_metric)})`);
+	
 	
 	var lines = g.append("line")
 		.attr("stroke", "#aaa")
