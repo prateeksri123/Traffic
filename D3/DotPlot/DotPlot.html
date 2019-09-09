@@ -17,8 +17,8 @@ limitations under the License.
   <script type="text/javascript" src="https://d3js.org/d3.v5.min.js"></script>
 
   <!-- Import utilities  -->
-  <script type="text/javascript" src="../util/messagingUtil.js"></script>
-  <script type="text/javascript" src="../util/contentUtil.js"></script>
+  <script type="text/javascript" src="messagingUtil.js"></script>
+  <script type="text/javascript" src="contentUtil.js"></script>
 </head>
 <body>
 
@@ -27,10 +27,17 @@ limitations under the License.
 <line stroke = "grey" stroke-width="2"></line>
   <style type="text/css">
   html, body, svg {
-    overflow: hidden;
+   
     margin: 0px;
     width: 100%;
     height: 100%;
+  }
+  #chart{
+	position: fixed;
+	left: 0px;
+	right: 0px;
+	top: 0px;
+	bottom: 0px;
   }
 </style>
 
@@ -38,7 +45,7 @@ limitations under the License.
 "use strict";
 document.addEventListener("DOMContentLoaded", function() {
   /******************************************************* Declare variables *******************************************************/
-
+  
   // Static data variables
   const SVG_ID = "circle";
   // Dynamic data variables
@@ -52,7 +59,7 @@ document.addEventListener("DOMContentLoaded", function() {
   const EDGE_PADDING = 10; // Padding between end of axes and edge of SVG
   const Y_AXIS_WIDTH = 30; // Width allocated for y-axis
   const X_AXIS_HEIGHT = 30; // Height allocated for x-axis
-  const margin = ({top: 20, right: 5, bottom: 150, left: 5});
+  const margin = ({top: 20, right: 50, bottom: 10, left: 10});
   // Dynamic dimension variables
   let WIDTH; // Width of SVG element
   let HEIGHT; // Height of SVG element
@@ -66,17 +73,17 @@ document.addEventListener("DOMContentLoaded", function() {
   let X_AXIS; // X axis group data-join
   let Y_AXIS; // Y axis group data join
   let DATA_BARS; // Data bars data-join
-/*  
+  
   DATA = [
 	{
 		safety_metric: "total crash rate",
-		min: 2,
-		lcl: 10,
-		median: 14,
-		mean: 15,
-		hcl: 20,
-		max: 30,
-		value: 13,
+		min: 20,
+		lcl: 100,
+		median: 140,
+		mean: 150,
+		hcl: 200,
+		max: 300,
+		value: 130,
 		combo: 100000,
 		major_road: '1st St',
 		minor_road: 'Bridge St'
@@ -84,13 +91,13 @@ document.addEventListener("DOMContentLoaded", function() {
 	},
 	{
 		safety_metric: "crash severity index",
-		min: 7,
-		lcl: 12,
-		median: 17,
-		mean: 17,
-		hcl: 39,
-		max: 50,
-		value: 23,
+		min: 70,
+		lcl: 120,
+		median: 170,
+		mean: 170,
+		hcl: 390,
+		max: 500,
+		value: 230,
 		combo: 100000,
 		major_road: '1st St',
 		minor_road: 'Bridge St',
@@ -98,13 +105,13 @@ document.addEventListener("DOMContentLoaded", function() {
 	},
 	{
 		safety_metric: "total fatalities",
-		min: 8,
-		lcl: 10,
-		median: 20,
-		mean: 25,
-		hcl: 29,
-		max: 40,
-		value: 22,
+		min: 80,
+		lcl: 100,
+		median: 200,
+		mean: 250,
+		hcl: 290,
+		max: 400,
+		value: 220,
 		combo: 100000,
 		major_road: '1st St',
 		minor_road: 'Bridge St'
@@ -112,13 +119,13 @@ document.addEventListener("DOMContentLoaded", function() {
 	},
 	{
 		safety_metric: "total crash rate",
-		min: 5,
-		lcl: 13,
-		median: 17,
-		mean: 18,
-		hcl: 23,
-		max: 33,
-		value: 13,
+		min: 50,
+		lcl: 130,
+		median: 170,
+		mean: 180,
+		hcl: 230,
+		max: 330,
+		value: 130,
 		combo: 110000,
 		major_road: '1st St',
 		minor_road: 'Bridge St'
@@ -126,13 +133,13 @@ document.addEventListener("DOMContentLoaded", function() {
 	},
 	{
 		safety_metric: "crash severity index",
-		min: 10,
-		lcl: 15,
-		median: 20,
-		mean: 20,
-		hcl: 42,
-		max: 53,
-		value: 23,
+		min: 100,
+		lcl: 150,
+		median: 200,
+		mean: 200,
+		hcl: 420,
+		max: 530,
+		value: 230,
 		combo: 110000,
 		major_road: '1st St',
 		minor_road: 'Bridge St'
@@ -140,13 +147,13 @@ document.addEventListener("DOMContentLoaded", function() {
 	},
 	{
 		safety_metric: "total fatalities",
-		min: 11,
-		lcl: 13,
-		median: 23,
-		mean: 28,
-		hcl: 32,
-		max: 43,
-		value: 22,
+		min: 110,
+		lcl: 130,
+		median: 230,
+		mean: 280,
+		hcl: 320,
+		max: 430,
+		value: 220,
 		combo: 110000,
 		major_road: '1st St',
 		minor_road: 'Bridge St'
@@ -154,13 +161,13 @@ document.addEventListener("DOMContentLoaded", function() {
 	},
 	{
 		safety_metric: "total crash rate",
-		min: 2,
-		lcl: 10,
-		median: 14,
-		mean: 15,
-		hcl: 20,
-		max: 30,
-		value: 18,
+		min: 20,
+		lcl: 100,
+		median: 140,
+		mean: 150,
+		hcl: 200,
+		max: 300,
+		value: 180,
 		combo: 110000,
 		major_road: '1st St',
 		minor_road: 'Church St'
@@ -168,13 +175,13 @@ document.addEventListener("DOMContentLoaded", function() {
 	},
 	{
 		safety_metric: "crash severity index",
-		min: 7,
-		lcl: 12,
-		median: 17,
-		mean: 17,
-		hcl: 39,
-		max: 50,
-		value: 12,
+		min: 70,
+		lcl: 120,
+		median: 170,
+		mean: 170,
+		hcl: 390,
+		max: 500,
+		value: 120,
 		combo: 110000,
 		major_road: '1st St',
 		minor_road: 'Church St'
@@ -182,30 +189,31 @@ document.addEventListener("DOMContentLoaded", function() {
 	},
 	{
 		safety_metric: "total fatalities",
-		min: 8,
-		lcl: 10,
-		median: 20,
-		mean: 25,
-		hcl: 29,
-		max: 40,
-		value: 16,
+		min: 80,
+		lcl: 100,
+		median: 200,
+		mean: 250,
+		hcl: 290,
+		max: 400,
+		value: 160,
 		combo: 110000,
 		major_road: '1st St',
 		minor_road: 'Church St'
 		
 	}
 	
-];*/
+];
+
 
  
   /*************************************************** Setup Callback Functions ***************************************************/
   // Attach event for data message from VA
-  va.messagingUtil.setOnDataReceivedCallback(onDataReceived);
+/*  va.messagingUtil.setOnDataReceivedCallback(onDataReceived);
   // Listen for resize event
   va.contentUtil.setupResizeListener(drawElements);
   /****************************************************** Callback Functions ******************************************************/
   // Take action on received data
-  function onDataReceived(messageFromVA) {
+  /*function onDataReceived(messageFromVA) {
     // Initialize data variables
     VA_MESSAGE = messageFromVA;
     VA_RESULT_NAME = messageFromVA.resultName;
@@ -244,12 +252,12 @@ document.addEventListener("DOMContentLoaded", function() {
 	major_name: VA_MESSAGE.data[i][9],
         minor_name: VA_MESSAGE.data[i][10]
       });
-	}    */
+	}    
 	  	
       drawElements();
       
   }
-	
+	*/
 	
    // Draw elements for first time and on resize event
   function drawElements() {
@@ -259,13 +267,13 @@ document.addEventListener("DOMContentLoaded", function() {
     }
 	
 	WIDTH = window.innerWidth;
-    	HEIGHT = window.innerHeight;
+    HEIGHT = window.innerHeight;
    	CHART_WIDTH = WIDTH - Y_AXIS_WIDTH - EDGE_PADDING;
    	CHART_HEIGHT = HEIGHT - X_AXIS_HEIGHT - EDGE_PADDING;  
 	  
 	var x = d3.scaleLinear()
 		.domain([d3.min(DATA, d => d.min), d3.max(DATA, d => d.max)])
-		.range([0,10])
+		
 		.rangeRound([margin.left, WIDTH - margin.right]);
 
 					
@@ -290,26 +298,26 @@ document.addEventListener("DOMContentLoaded", function() {
 	const SVG = d3.select("body")
 	  .data([DATA])
 	  .append("svg")
-	  .attr("width", WIDTH)
-	  .attr("height", HEIGHT);
+	  .attr("width", CHART_WIDTH)
+	  .attr("height", CHART_HEIGHT);
 	 
 	/*SVG.append("g").call(xAxis);*/
-	var g = SVG.append("g");
+	SVG.append("g");
 	
 	
 
-	var labels = g.append("g")
+	var g = SVG.append("g")
 		.attr("text-anchor", "end")
 		.style("font", "10px sans-serif")
 		.selectAll("g")
-		.data(DATA)
-		.join("g")
-		.attr("transform", (d,i) => `translate(0,${y(d.safety_metric)})`);
+		.data([DATA])
+		.join("g");
+		//.attr("transform", (d,i) => `translate(0,${y(d.safety_metric)})`);
 	
 	
-	var lines = g.append("line")
+	g.append("line")
 		.attr("stroke", "#aaa")
-		.attr("x1", d => x(d3.min([MEASUREMENTS], k => d[k])))
+		.attr("x1", x([d3.min(DATA, d => d.min)]))
         	.attr("x2", d => x(d3.max([MEASUREMENTS], k => d[k])));  
 	  
 	
@@ -343,7 +351,7 @@ document.addEventListener("DOMContentLoaded", function() {
 	*/
 	
 	  
-  
+  drawElements();
   /******************************************************* Helper Functions    *******************************************************/
   
 	
